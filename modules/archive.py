@@ -19,81 +19,69 @@ router = Router()
 # ———————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
 
-@router.callback_query(F.data == 'mainMenu.Show')
+@router.callback_query(F.data == 'archive.Show')
 async def Show(message: types.Message, bot: Bot):
     # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
     DATA_SERVER = await database.getData('settings', 'id', "'1'")
     await database.setUserID(message.from_user.id, "tg_answer", "'0'")
-    await database.setUserID(message.from_user.id, "state", "'mainMenu.Show'")
+    await database.setUserID(message.from_user.id, "state", "'archive.Show'")
     DATA_USER = await database.getUserID(message.from_user.id)
-
-    # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-
-    builder = InlineKeyboardBuilder()
-    builder.row(types.InlineKeyboardButton(text="🟩 Начать запись", callback_data="record.StartRobot"))
-    builder.row(types.InlineKeyboardButton(text="📄 Последний лог", callback_data="lastlog.Show"))
-    builder.add(types.InlineKeyboardButton(text="📑 Архив логов", callback_data="archive.Show"))
-    # builder.row(types.InlineKeyboardButton(text="🔰 FAQ", callback_data="mainMenu.faq"))
-    builder.row(types.InlineKeyboardButton(text="⚙️ Настройки", callback_data="settings.Show"))
-
-    # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-    MAIN = await bot.edit_message_text(
-        chat_id=message.from_user.id,
-        text=f"🎯 Главное меню",
-        message_id=DATA_USER[2],
-        reply_markup=builder.as_markup())
-
-
-
-@router.callback_query(F.data == 'mainMenu.faq')
-async def faq(message: types.Message, bot: Bot):
-    # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-
-    DATA_SERVER = await database.getData('settings', 'id', "'1'")
-    await database.setUserID(message.from_user.id, "tg_answer", "'0'")
-    await database.setUserID(message.from_user.id, "state", "'mainMenu.faq'")
-    DATA_USER = await database.getUserID(message.from_user.id)
+    ARCHIVE = ast.literal_eval(DATA_USER[7])
 
     # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
     builder = InlineKeyboardBuilder()
     builder.row(types.InlineKeyboardButton(text="◀️ Назад", callback_data="mainMenu.Show"))
-    builder.row(types.InlineKeyboardButton(text="🔰 Начало записи", callback_data="mainMenu.faq1"))
-    builder.row(types.InlineKeyboardButton(text="🔰 Выбор шаблона", callback_data="mainMenu.faq2"))
-    builder.row(types.InlineKeyboardButton(text="🔰 Включение секунд для логов", callback_data="mainMenu.faq3"))
-    builder.row(types.InlineKeyboardButton(text="🔰 Режим ходока", callback_data="mainMenu.faq4"))
-    builder.row(types.InlineKeyboardButton(text="🔰 Свои данные для логов", callback_data="mainMenu.faq5"))
-    builder.row(types.InlineKeyboardButton(text="🔰 Очистка данных", callback_data="mainMenu.faq6"))
+    count = 0
+    for item in ARCHIVE:
+        builder.row(types.InlineKeyboardButton(text=f"🤖 {item[-1][0]} • 🗺 {item[-1][1]} • {item[-1][2]}", callback_data=f"archive.ShowLogs-{count}"))
+        count = count + 1
 
     # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
     MAIN = await bot.edit_message_text(
         chat_id=message.from_user.id,
-        text=f"🎯 » 🔰 FAQ",
+        text=f"🎯 » 📑 Архив логов",
         message_id=DATA_USER[2],
         reply_markup=builder.as_markup())
 
 
 
-@router.callback_query(F.data == 'mainMenu.faq1')
-async def faq(message: types.Message, bot: Bot):
+
+@router.callback_query(F.data.startswith('archive.ShowLogs-'))
+async def Show(callback: types.CallbackQuery, bot: Bot):
     # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
     DATA_SERVER = await database.getData('settings', 'id', "'1'")
-    await database.setUserID(message.from_user.id, "tg_answer", "'0'")
-    await database.setUserID(message.from_user.id, "state", "'mainMenu.faq1'")
-    DATA_USER = await database.getUserID(message.from_user.id)
+    await database.setUserID(callback.from_user.id, "tg_answer", "'0'")
+    await database.setUserID(callback.from_user.id, "state", "'archive.Show'")
+    DATA_USER = await database.getUserID(callback.from_user.id)
 
     # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
     builder = InlineKeyboardBuilder()
-    builder.row(types.InlineKeyboardButton(text="◀️ Назад", callback_data="mainMenu.Show"))
+    builder.row(types.InlineKeyboardButton(text="◀️ Назад", callback_data="archive.Show"))
+
+    LOGS = ast.literal_eval(DATA_USER[7])
+    IDLOG = callback.data.replace('archive.ShowLogs-', '')
+    IDLOG = int(IDLOG)
+    TEXT_LOGS = ''
+    for item in LOGS[IDLOG][:-1]:
+        TEXT_LOGS = f"{TEXT_LOGS}\n{item}"
+
+    TEXT_BOT_INFO = ''
+    if LOGS[IDLOG][-1][0] != 0:
+        TEXT_BOT_INFO = f'🤖 <b>А{LOGS[IDLOG][-1][0]}</b>'
+    if LOGS[IDLOG][-1][1] != 0:
+        TEXT_BOT_INFO = f'{TEXT_BOT_INFO} • 🗺 <b>{LOGS[IDLOG][-1][1]}</b>\n'
+    else:
+        TEXT_BOT_INFO = f'{TEXT_BOT_INFO}\n'
 
     # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
     MAIN = await bot.edit_message_text(
-        chat_id=message.from_user.id,
-        text=f"🎯 » 🔰 FAQ\n\n"
-             f"<b>Начало записи</b>\n"
-             f"Начать запись логов очень легко и для этого необходимо нажать на зеленую кнопку на главной странице бота. Затем выберите робота, на котором будете работать или можете выбрать из истории. Далее в зависимости от шаблона у вас будут разные вопросы: для МЛП будет указание маршрута, для ходоков указание локации. После первоначальной настройки вы переходите на экран с заполнение логов!",
+        chat_id=callback.from_user.id,
+        text=f"🎯 » 📄 » Архивный лог\n\n"
+             f"{TEXT_BOT_INFO}"
+             f"{TEXT_LOGS}",
         message_id=DATA_USER[2],
         reply_markup=builder.as_markup())

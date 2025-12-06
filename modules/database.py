@@ -46,15 +46,15 @@ async def connectBase():  # Подключение к БД
 async def addNewAccount(tg_id):  # Создание нового аккаунта в базе данных
     try:
         # ---------------------------------------------------------------------------------------------
-        ACTIONS = [['BASEACTION1'], ['BASEACTION2', 'BASEACTION3'], ['BASEACTION4', 'BASEACTION5'], ['BASEACTION6'], ['BASEACTION7'], ['BASEACTION8'], ['BASEACTION9'], ['BASEACTION10'], ['BASEACTION11']]
+        ACTIONS = [['BASEACTION1'], ['BASEACTION2', 'BASEACTION3'], ['BASEACTION4', 'BASEACTION5'], ['BASEACTION6'], ['BASEACTION7'], ['BASEACTION8'], ['BASEACTION9'], ['BASEACTION10'], ['BASEACTION11'], ['BASEACTION12', 'BASEACTION13', 'BASEACTION14'], ['BASEACTION15']]
         LOGS = []
         LOGS_ARCHIVE = []
         ROBOT_INFO = [0, 0]
-        ROBOT_INFO_ARCHIVE = [[], []]
+        ROBOT_INFO_ARCHIVE = [[], [], []]
         timestamp = int(time.time())
         connection = await connectBase()
         async with connection.cursor() as cursor:
-            new_user = "INSERT INTO `users` (tg_id, tg_mainMessage, tg_answer, state, actions, logs, logs_archive, robot_info, settingTimeAdd, robot_info_archive, tg_lastMessage, tg_online) VALUES " \
+            new_user = "INSERT INTO `users` (tg_id, tg_mainMessage, tg_answer, state, actions, logs, logs_archive, robot_info, settingTimeAdd, robot_info_archive, tg_lastMessage, tg_online, profile, temporary, settings_HodokForm, admin, tg_username, settings_help, sm) VALUES " \
                        f"('{tg_id}', " \
                        f"'-1', " \
                        f"'1', " \
@@ -66,7 +66,14 @@ async def addNewAccount(tg_id):  # Создание нового аккаунт�
                        f"'0', " \
                        f"\"{ROBOT_INFO_ARCHIVE}\", " \
                        f"'{timestamp}', " \
-                       f"1" \
+                       f"'1', " \
+                       f"'МЛП (уменьшенный)', " \
+                       f"'', " \
+                       f"'1', " \
+                       f"'0', " \
+                       f"'-', " \
+                       f"'0', " \
+                       f"'-1'" \
                        f")"
             await cursor.execute(new_user)
             await connection.commit()

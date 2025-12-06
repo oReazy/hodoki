@@ -16,7 +16,7 @@ from modules import database
 # ———————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
 async def logoutServer(bot: Bot):
-    TIME= int(time.time())
+    TIME = int(time.time())
     TIME_TASK = TIME - 28800
     USERS = await database.getMultiProgramBdData('users', f"tg_lastMessage < {TIME_TASK} AND tg_online = 1")
     for USER in USERS:
@@ -27,5 +27,5 @@ async def logoutServer(bot: Bot):
         )
         await bot.send_message(
             chat_id=USER[1],
-            text='❇️ Чтобы продолжить, напишите /start'
+            text='❇️ Чтобы продолжить, напишите /new_message'
         )

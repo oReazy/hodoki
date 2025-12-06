@@ -32,27 +32,31 @@ async def Show(message: types.Message, bot: Bot):
 
     builder = InlineKeyboardBuilder()
     builder.row(types.InlineKeyboardButton(text="◀️ Назад", callback_data="mainMenu.Show"))
-    builder.row(types.InlineKeyboardButton(text="📄 Скопировать", callback_data="none"))
 
     LOGS = ast.literal_eval(DATA_USER[7])
-
-    TEXT_LOGS = ''
-    for item in LOGS[0][:-1]:
-        TEXT_LOGS = f"{TEXT_LOGS}\n{item}"
-
-    TEXT_BOT_INFO = ''
-    if LOGS[0][-1][0] != 0:
-        TEXT_BOT_INFO = f'🤖 <b>А{LOGS[0][-1][0]}</b>'
-    if LOGS[0][-1][1] != 0:
-        TEXT_BOT_INFO = f'{TEXT_BOT_INFO} • 🗺 <b>Маршрут {LOGS[0][-1][1]}</b>\n'
+    if len(LOGS) == 0:
+        MAIN = await bot.edit_message_text(
+            chat_id=message.from_user.id,
+            text=f"❌ Нету последних логов",
+            message_id=DATA_USER[2],
+            reply_markup=builder.as_markup())
     else:
-        TEXT_BOT_INFO = f'{TEXT_BOT_INFO}\n'
+        TEXT_LOGS = ''
+        for item in LOGS[0][:-1]:
+            TEXT_LOGS = f"{TEXT_LOGS}\n{item}"
 
-    # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-    MAIN = await bot.edit_message_text(
-        chat_id=message.from_user.id,
-        text=f"🎯 » 📄 Последний лог\n\n"
-             f"{TEXT_BOT_INFO}"
-             f"{TEXT_LOGS}",
-        message_id=DATA_USER[2],
-        reply_markup=builder.as_markup())
+        TEXT_BOT_INFO = ''
+        if LOGS[0][-1][0] != 0:
+            TEXT_BOT_INFO = f'🤖 <b>А{LOGS[0][-1][0]}</b>'
+        if LOGS[0][-1][1] != 0:
+            TEXT_BOT_INFO = f'{TEXT_BOT_INFO} • 🗺 <b>{LOGS[0][-1][1]}</b>\n'
+        else:
+            TEXT_BOT_INFO = f'{TEXT_BOT_INFO}\n'
+
+        # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+        MAIN = await bot.edit_message_text(
+            chat_id=message.from_user.id,
+            text=f"{TEXT_BOT_INFO}"
+                 f"{TEXT_LOGS}",
+            message_id=DATA_USER[2],
+            reply_markup=builder.as_markup())
