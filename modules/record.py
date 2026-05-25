@@ -19,436 +19,68 @@ router = Router()
 # ———————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
 
-@router.callback_query(F.data == 'record.StartRobot')
-async def StartRobot(message: types.Message, bot: Bot):
-    # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-
+# Система вопросов перед стартом записи.
+@router.callback_query(F.data == 'record.QuestionStart')
+async def questionSystem(message: types.Message, bot: Bot):
     DATA_SERVER = await database.getData('settings', 'id', "'1'")
+    DATA_USER = await database.getUserID(message.from_user.id)
     await database.setUserID(message.from_user.id, "tg_answer", "'1'")
-    await database.setUserID(message.from_user.id, "state", "'record.StartRobotCheck'")
-    DATA_USER = await database.getUserID(message.from_user.id)
-    await database.setUserID(message.from_user.id, 'logs', "'[]'")
-
-    # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-
-    builder = InlineKeyboardBuilder()
-    builder.row(types.InlineKeyboardButton(text="❌ Отменить запись", callback_data="mainMenu.Show"))
-    ROBOT_INFO = ast.literal_eval(DATA_USER[10])
-    if len(ROBOT_INFO[0]) == 1:
-        builder.row(types.InlineKeyboardButton(text=f"⚡️ {ROBOT_INFO[0][0]}", callback_data="record.StartRobotVAR1"))
-    if len(ROBOT_INFO[0]) == 2:
-        builder.row(types.InlineKeyboardButton(text=f"⚡️ {ROBOT_INFO[0][0]}", callback_data="record.StartRobotVAR1"))
-        builder.add(types.InlineKeyboardButton(text=f"{ROBOT_INFO[0][1]}", callback_data="record.StartRobotVAR2"))
-    if len(ROBOT_INFO[0]) == 3:
-        builder.row(types.InlineKeyboardButton(text=f"⚡️ {ROBOT_INFO[0][0]}", callback_data="record.StartRobotVAR1"))
-        builder.add(types.InlineKeyboardButton(text=f"{ROBOT_INFO[0][1]}", callback_data="record.StartRobotVAR2"))
-        builder.add(types.InlineKeyboardButton(text=f"{ROBOT_INFO[0][2]}", callback_data="record.StartRobotVAR3"))
-
-    # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-    MAIN = await bot.edit_message_text(
-        chat_id=message.from_user.id,
-        text=f"🎯 » 🟩 Начать запись\n\n"
-             f"📝 Введите номер робота на котором будете вести запись или выберите из последних используемых",
-        message_id=DATA_USER[2],
-        reply_markup=builder.as_markup())
-
-
-@router.callback_query(F.data == 'record.StartRobotVAR1')
-async def StartRobotVAR1(message: types.Message, bot: Bot):
-    # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-
-    DATA_SERVER = await database.getData('settings', 'id', "'1'")
-    await database.setUserID(message.from_user.id, "tg_answer", "'0'")
-    await database.setUserID(message.from_user.id, "state", "'record.StartRobotCheck'")
-    DATA_USER = await database.getUserID(message.from_user.id)
-
-    # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-    ROBOT_INFO_ARCHIVE = ast.literal_eval(DATA_USER[10])
-    ROBOT_INFO = ast.literal_eval(DATA_USER[8])
-    ROBOT_INFO[0] = ROBOT_INFO_ARCHIVE[0][0]
-    await database.setUserID(message.from_user.id, 'robot_info', f'\"{ROBOT_INFO}\"')
-    if DATA_USER[13] != 'Ходок':
-        await StartRoute(message, bot)
-    else:
-        await StartLocation(message, bot)
-
-
-@router.callback_query(F.data == 'record.StartRobotVAR2')
-async def StartRobotVAR2(message: types.Message, bot: Bot):
-    # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-
-    DATA_SERVER = await database.getData('settings', 'id', "'1'")
-    await database.setUserID(message.from_user.id, "tg_answer", "'0'")
-    await database.setUserID(message.from_user.id, "state", "'record.StartRobotCheck'")
-    DATA_USER = await database.getUserID(message.from_user.id)
-
-    # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-    ROBOT_INFO_ARCHIVE = ast.literal_eval(DATA_USER[10])
-    ROBOT_INFO = ast.literal_eval(DATA_USER[8])
-    ROBOT_INFO[0] = ROBOT_INFO_ARCHIVE[0][1]
-    await database.setUserID(message.from_user.id, 'robot_info', f'\"{ROBOT_INFO}\"')
-    if DATA_USER[13] != 'Ходок':
-        await StartRoute(message, bot)
-    else:
-        await StartLocation(message, bot)
-
-
-@router.callback_query(F.data == 'record.StartRobotVAR3')
-async def StartRobotVAR3(message: types.Message, bot: Bot):
-    # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-
-    DATA_SERVER = await database.getData('settings', 'id', "'1'")
-    await database.setUserID(message.from_user.id, "tg_answer", "'0'")
-    await database.setUserID(message.from_user.id, "state", "'record.StartRobotCheck'")
-    DATA_USER = await database.getUserID(message.from_user.id)
-
-    # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-    ROBOT_INFO_ARCHIVE = ast.literal_eval(DATA_USER[10])
-    ROBOT_INFO = ast.literal_eval(DATA_USER[8])
-    ROBOT_INFO[0] = ROBOT_INFO_ARCHIVE[0][2]
-    await database.setUserID(message.from_user.id, 'robot_info', f'\"{ROBOT_INFO}\"')
-    if DATA_USER[13] != 'Ходок':
-        await StartRoute(message, bot)
-    else:
-        await StartLocation(message, bot)
-
-
-
-
-@router.callback_query(F.data == 'record.StartRobotCheck')
-async def StartRobotCheck(message: types.Message, bot: Bot):
-    # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-
-    DATA_SERVER = await database.getData('settings', 'id', "'1'")
-    await database.setUserID(message.from_user.id, "tg_answer", "'0'")
-    await database.setUserID(message.from_user.id, "state", "'record.StartRobotCheck'")
-    DATA_USER = await database.getUserID(message.from_user.id)
-
-    # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-
-    if message.text.isdigit():
-        ROBOT_INFO = ast.literal_eval(DATA_USER[8])
-        ROBOT_INFO[0] = int(message.text)
-        ROBOT_INFO_ARCHIVE = ast.literal_eval(DATA_USER[10])
-        if len(ROBOT_INFO_ARCHIVE[0]) == 3:
-            ROBOT_INFO_ARCHIVE[0].pop
-            ROBOT_INFO_ARCHIVE[0][2] = ROBOT_INFO_ARCHIVE[0][1]
-            ROBOT_INFO_ARCHIVE[0][1] = ROBOT_INFO_ARCHIVE[0][0]
-            ROBOT_INFO_ARCHIVE[0][0] = int(message.text)
-        else:
-            if len(ROBOT_INFO_ARCHIVE[0]) == 0:
-                ROBOT_INFO_ARCHIVE[0].append(int(message.text))
-            elif len(ROBOT_INFO_ARCHIVE[0]) == 1:
-                ROBOT_INFO_ARCHIVE[0].append(ROBOT_INFO_ARCHIVE[0][0])
-                ROBOT_INFO_ARCHIVE[0][0] = int(message.text)
-            elif len(ROBOT_INFO_ARCHIVE[0]) == 2:
-                ROBOT_INFO_ARCHIVE[0].append(ROBOT_INFO_ARCHIVE[0][1])
-                ROBOT_INFO_ARCHIVE[0][1] = ROBOT_INFO_ARCHIVE[0][0]
-                ROBOT_INFO_ARCHIVE[0][0] = int(message.text)
-        await database.setUserID(message.from_user.id, 'robot_info', f'\"{ROBOT_INFO}\"')
-        await database.setUserID(message.from_user.id, 'robot_info_archive', f'\"{ROBOT_INFO_ARCHIVE}\"')
-        if DATA_USER[13] != 'Ходок':
-            await StartRoute(message, bot)
-        else:
-            await StartLocation(message, bot)
-    else:
-        builder = InlineKeyboardBuilder()
-        builder.row(types.InlineKeyboardButton(text="❌ Отменить запись", callback_data="mainMenu.Show"))
-        ROBOT_INFO = ast.literal_eval(DATA_USER[10])
-        if len(ROBOT_INFO[0]) == 1:
-            builder.row(types.InlineKeyboardButton(text=f"⚡️ {ROBOT_INFO[0][0]}", callback_data="record.StartRobotVAR1"))
-        if len(ROBOT_INFO[0]) == 2:
-            builder.row(types.InlineKeyboardButton(text=f"⚡️ {ROBOT_INFO[0][0]}", callback_data="record.StartRobotVAR1"))
-            builder.add(types.InlineKeyboardButton(text=f"{ROBOT_INFO[0][1]}", callback_data="record.StartRobotVAR2"))
-        if len(ROBOT_INFO[0]) == 3:
-            builder.row(types.InlineKeyboardButton(text=f"⚡️ {ROBOT_INFO[0][0]}", callback_data="record.StartRobotVAR1"))
-            builder.add(types.InlineKeyboardButton(text=f"{ROBOT_INFO[0][1]}", callback_data="record.StartRobotVAR2"))
-            builder.add(types.InlineKeyboardButton(text=f"{ROBOT_INFO[0][2]}", callback_data="record.StartRobotVAR3"))
-
-        # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-        MAIN = await bot.edit_message_text(
-            chat_id=message.from_user.id,
-            text=f"🎯 » 🟩 Начать запись\n\n"
-                 f"❌ Укажите робота цифрами\n\n"
-                 f"📝 Введите номер робота на котором будете вести запись или выберите из последних используемых",
-            message_id=DATA_USER[2],
-            reply_markup=builder.as_markup())
-
-
-
-
-
-
-
-
-
-
-
-@router.callback_query(F.data == 'record.StartLocation')
-async def StartLocation(message: types.Message, bot: Bot):
-    # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-
-    DATA_SERVER = await database.getData('settings', 'id', "'1'")
-    await database.setUserID(message.from_user.id, "tg_answer", "'1'")
-    await database.setUserID(message.from_user.id, "state", "'record.StartLocationCheck'")
-    DATA_USER = await database.getUserID(message.from_user.id)
-
-    # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-
-    builder = InlineKeyboardBuilder()
-    builder.row(types.InlineKeyboardButton(text="❌ Отменить запись", callback_data="mainMenu.Show"))
-    ROBOT_INFO = ast.literal_eval(DATA_USER[10])
-    if len(ROBOT_INFO[2]) == 1:
-        builder.row(types.InlineKeyboardButton(text=f"⚡️ {ROBOT_INFO[2][0]}", callback_data="record.StartLocationVAR1"))
-    if len(ROBOT_INFO[2]) == 2:
-        builder.row(types.InlineKeyboardButton(text=f"⚡️ {ROBOT_INFO[2][0]}", callback_data="record.StartLocationVAR1"))
-        builder.add(types.InlineKeyboardButton(text=f"{ROBOT_INFO[2][1]}", callback_data="record.StartLocationVAR2"))
-    if len(ROBOT_INFO[2]) == 3:
-        builder.row(types.InlineKeyboardButton(text=f"⚡️ {ROBOT_INFO[2][0]}", callback_data="record.StartLocationVAR1"))
-        builder.add(types.InlineKeyboardButton(text=f"{ROBOT_INFO[2][1]}", callback_data="record.StartLocationVAR2"))
-        builder.add(types.InlineKeyboardButton(text=f"{ROBOT_INFO[2][2]}", callback_data="record.StartLocationVAR3"))
-
-    # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-    MAIN = await bot.edit_message_text(
-        chat_id=message.from_user.id,
-        text=f"🎯 » 🟩 Начать запись\n\n"
-             f"📝 Введите название локации или выберите из последних",
-        message_id=DATA_USER[2],
-        reply_markup=builder.as_markup())
-
-
-@router.callback_query(F.data == 'record.StartLocationVAR1')
-async def StartLocationVAR1(message: types.Message, bot: Bot):
-    # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-
-    DATA_SERVER = await database.getData('settings', 'id', "'1'")
-    await database.setUserID(message.from_user.id, "tg_answer", "'0'")
-    await database.setUserID(message.from_user.id, "state", "'record.StartLocationСheck'")
-    DATA_USER = await database.getUserID(message.from_user.id)
-
-    # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-    ROBOT_INFO_ARCHIVE = ast.literal_eval(DATA_USER[10])
-    ROBOT_INFO = ast.literal_eval(DATA_USER[8])
-    ROBOT_INFO[1] = ROBOT_INFO_ARCHIVE[2][0]
-    await database.setUserID(message.from_user.id, 'robot_info', f'\"{ROBOT_INFO}\"')
-    await recordLogs(message, bot)
-
-
-@router.callback_query(F.data == 'record.StartLocationVAR2')
-async def StartLocationVAR2(message: types.Message, bot: Bot):
-    # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-
-    DATA_SERVER = await database.getData('settings', 'id', "'1'")
-    await database.setUserID(message.from_user.id, "tg_answer", "'0'")
-    await database.setUserID(message.from_user.id, "state", "'record.StartLocationСheck'")
-    DATA_USER = await database.getUserID(message.from_user.id)
-
-    # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-    ROBOT_INFO_ARCHIVE = ast.literal_eval(DATA_USER[10])
-    ROBOT_INFO = ast.literal_eval(DATA_USER[8])
-    ROBOT_INFO[1] = ROBOT_INFO_ARCHIVE[2][1]
-    await database.setUserID(message.from_user.id, 'robot_info', f'\"{ROBOT_INFO}\"')
-    await recordLogs(message, bot)
-
-
-@router.callback_query(F.data == 'record.StartLocationVAR3')
-async def StartLocationVAR3(message: types.Message, bot: Bot):
-    # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-
-    DATA_SERVER = await database.getData('settings', 'id', "'1'")
-    await database.setUserID(message.from_user.id, "tg_answer", "'0'")
-    await database.setUserID(message.from_user.id, "state", "'record.StartLocationСheck'")
-    DATA_USER = await database.getUserID(message.from_user.id)
-
-    # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-    ROBOT_INFO_ARCHIVE = ast.literal_eval(DATA_USER[10])
-    ROBOT_INFO = ast.literal_eval(DATA_USER[8])
-    ROBOT_INFO[1] = ROBOT_INFO_ARCHIVE[2][2]
-    await database.setUserID(message.from_user.id, 'robot_info', f'\"{ROBOT_INFO}\"')
-    await recordLogs(message, bot)
-
-
-@router.callback_query(F.data == 'record.StartLocationCheck')
-async def StartLocationCheck(message: types.Message, bot: Bot):
-    # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-
-    DATA_SERVER = await database.getData('settings', 'id', "'1'")
-    await database.setUserID(message.from_user.id, "tg_answer", "'0'")
-    await database.setUserID(message.from_user.id, "state", "'record.StartLocationCheck'")
-    DATA_USER = await database.getUserID(message.from_user.id)
-
-    # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-    ROBOT_INFO = ast.literal_eval(DATA_USER[8])
-    ROBOT_INFO[1] = message.text
-    ROBOT_INFO_ARCHIVE = ast.literal_eval(DATA_USER[10])
-    if len(ROBOT_INFO_ARCHIVE[2]) == 3:
-        ROBOT_INFO_ARCHIVE[2].pop
-        ROBOT_INFO_ARCHIVE[2][2] = ROBOT_INFO_ARCHIVE[2][1]
-        ROBOT_INFO_ARCHIVE[2][1] = ROBOT_INFO_ARCHIVE[2][0]
-        ROBOT_INFO_ARCHIVE[2][0] = message.text
-    else:
-        if len(ROBOT_INFO_ARCHIVE[2]) == 0:
-            ROBOT_INFO_ARCHIVE[2].append(message.text)
-        elif len(ROBOT_INFO_ARCHIVE[2]) == 1:
-            ROBOT_INFO_ARCHIVE[2].append(ROBOT_INFO_ARCHIVE[2][0])
-            ROBOT_INFO_ARCHIVE[2][0] = message.text
-        elif len(ROBOT_INFO_ARCHIVE[2]) == 2:
-            ROBOT_INFO_ARCHIVE[2].append(ROBOT_INFO_ARCHIVE[2][1])
-            ROBOT_INFO_ARCHIVE[2][1] = ROBOT_INFO_ARCHIVE[2][0]
-            ROBOT_INFO_ARCHIVE[2][0] = message.text
-    await database.setUserID(message.from_user.id, 'robot_info', f'\"{ROBOT_INFO}\"')
-    await database.setUserID(message.from_user.id, 'robot_info_archive', f'\"{ROBOT_INFO_ARCHIVE}\"')
-    await recordLogs(message, bot)
-
-
-
-
-
-
-
-
-@router.callback_query(F.data == 'record.StartRoute')
-async def StartRoute(message: types.Message, bot: Bot):
-    # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-
-    DATA_SERVER = await database.getData('settings', 'id', "'1'")
-    await database.setUserID(message.from_user.id, "tg_answer", "'1'")
-    await database.setUserID(message.from_user.id, "state", "'record.StartRouteCheck'")
-    DATA_USER = await database.getUserID(message.from_user.id)
-
-    # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-
-    builder = InlineKeyboardBuilder()
-    builder.row(types.InlineKeyboardButton(text="❌ Отменить запись", callback_data="mainMenu.Show"))
-    ROBOT_INFO = ast.literal_eval(DATA_USER[10])
-    if len(ROBOT_INFO[1]) == 1:
-        builder.row(types.InlineKeyboardButton(text=f"⚡️ {ROBOT_INFO[1][0]}", callback_data="record.StartRouteVAR1"))
-    if len(ROBOT_INFO[1]) == 2:
-        builder.row(types.InlineKeyboardButton(text=f"⚡️ {ROBOT_INFO[1][0]}", callback_data="record.StartRouteVAR1"))
-        builder.add(types.InlineKeyboardButton(text=f"{ROBOT_INFO[1][1]}", callback_data="record.StartRouteVAR2"))
-    if len(ROBOT_INFO[1]) == 3:
-        builder.row(types.InlineKeyboardButton(text=f"⚡️ {ROBOT_INFO[1][0]}", callback_data="record.StartRouteVAR1"))
-        builder.add(types.InlineKeyboardButton(text=f"{ROBOT_INFO[1][1]}", callback_data="record.StartRouteVAR2"))
-        builder.add(types.InlineKeyboardButton(text=f"{ROBOT_INFO[1][2]}", callback_data="record.StartRouteVAR3"))
-
-    # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-    MAIN = await bot.edit_message_text(
-        chat_id=message.from_user.id,
-        text=f"🎯 » 🟩 Начать запись\n\n"
-             f"📝 Введите номер маршрута или выберите из последних",
-        message_id=DATA_USER[2],
-        reply_markup=builder.as_markup())
-
-
-@router.callback_query(F.data == 'record.StartRouteVAR1')
-async def StartRouteVAR1(message: types.Message, bot: Bot):
-    # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-
-    DATA_SERVER = await database.getData('settings', 'id', "'1'")
-    await database.setUserID(message.from_user.id, "tg_answer", "'0'")
-    await database.setUserID(message.from_user.id, "state", "'record.StartRobotCheck'")
-    DATA_USER = await database.getUserID(message.from_user.id)
-
-    # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-    ROBOT_INFO_ARCHIVE = ast.literal_eval(DATA_USER[10])
-    ROBOT_INFO = ast.literal_eval(DATA_USER[8])
-    ROBOT_INFO[1] = ROBOT_INFO_ARCHIVE[1][0]
-    await database.setUserID(message.from_user.id, 'robot_info', f'\"{ROBOT_INFO}\"')
-    await recordLogs(message, bot)
-
-
-@router.callback_query(F.data == 'record.StartRouteVAR2')
-async def StartRouteVAR2(message: types.Message, bot: Bot):
-    # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-
-    DATA_SERVER = await database.getData('settings', 'id', "'1'")
-    await database.setUserID(message.from_user.id, "tg_answer", "'0'")
-    await database.setUserID(message.from_user.id, "state", "'record.StartRobotCheck'")
-    DATA_USER = await database.getUserID(message.from_user.id)
-
-    # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-    ROBOT_INFO_ARCHIVE = ast.literal_eval(DATA_USER[10])
-    ROBOT_INFO = ast.literal_eval(DATA_USER[8])
-    ROBOT_INFO[1] = ROBOT_INFO_ARCHIVE[1][1]
-    await database.setUserID(message.from_user.id, 'robot_info', f'\"{ROBOT_INFO}\"')
-    await recordLogs(message, bot)
-
-
-@router.callback_query(F.data == 'record.StartRouteVAR3')
-async def StartRouteVAR3(message: types.Message, bot: Bot):
-    # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-
-    DATA_SERVER = await database.getData('settings', 'id', "'1'")
-    await database.setUserID(message.from_user.id, "tg_answer", "'0'")
-    await database.setUserID(message.from_user.id, "state", "'record.StartRobotCheck'")
-    DATA_USER = await database.getUserID(message.from_user.id)
-
-    # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-    ROBOT_INFO_ARCHIVE = ast.literal_eval(DATA_USER[10])
-    ROBOT_INFO = ast.literal_eval(DATA_USER[8])
-    ROBOT_INFO[1] = ROBOT_INFO_ARCHIVE[1][2]
-    await database.setUserID(message.from_user.id, 'robot_info', f'\"{ROBOT_INFO}\"')
-    await recordLogs(message, bot)
-
-
-
-
-@router.callback_query(F.data == 'record.StartRouteCheck')
-async def StartRouteCheck(message: types.Message, bot: Bot):
-    # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-
-    DATA_SERVER = await database.getData('settings', 'id', "'1'")
-    await database.setUserID(message.from_user.id, "tg_answer", "'0'")
-    await database.setUserID(message.from_user.id, "state", "'record.StartRouteCheck'")
-    DATA_USER = await database.getUserID(message.from_user.id)
-
-    # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-
-    if message.text.isdigit():
-        ROBOT_INFO = ast.literal_eval(DATA_USER[8])
-        ROBOT_INFO[1] = int(message.text)
-        ROBOT_INFO_ARCHIVE = ast.literal_eval(DATA_USER[10])
-        if len(ROBOT_INFO_ARCHIVE[1]) == 3:
-            ROBOT_INFO_ARCHIVE[1].pop
-            ROBOT_INFO_ARCHIVE[1][2] = ROBOT_INFO_ARCHIVE[1][1]
-            ROBOT_INFO_ARCHIVE[1][1] = ROBOT_INFO_ARCHIVE[1][0]
-            ROBOT_INFO_ARCHIVE[1][0] = int(message.text)
-        else:
-            if len(ROBOT_INFO_ARCHIVE[1]) == 0:
-                ROBOT_INFO_ARCHIVE[1].append(int(message.text))
-            elif len(ROBOT_INFO_ARCHIVE[1]) == 1:
-                ROBOT_INFO_ARCHIVE[1].append(ROBOT_INFO_ARCHIVE[1][0])
-                ROBOT_INFO_ARCHIVE[1][0] = int(message.text)
-            elif len(ROBOT_INFO_ARCHIVE[1]) == 2:
-                ROBOT_INFO_ARCHIVE[1].append(ROBOT_INFO_ARCHIVE[1][1])
-                ROBOT_INFO_ARCHIVE[1][1] = ROBOT_INFO_ARCHIVE[1][0]
-                ROBOT_INFO_ARCHIVE[1][0] = int(message.text)
-        await database.setUserID(message.from_user.id, 'robot_info', f'\"{ROBOT_INFO}\"')
-        await database.setUserID(message.from_user.id, 'robot_info_archive', f'\"{ROBOT_INFO_ARCHIVE}\"')
+    await database.setUserID(message.from_user.id, "state", "'record.QuestionCheck'")
+    # ----------------------------------------------------------------------------------------------
+    LIST_QUESTIONS = ast.literal_eval(DATA_USER[20])
+    if len(LIST_QUESTIONS) == 0:
         await recordLogs(message, bot)
     else:
-        builder = InlineKeyboardBuilder()
-        builder.row(types.InlineKeyboardButton(text="❌ Отменить запись", callback_data="mainMenu.Show"))
-        ROBOT_INFO = ast.literal_eval(DATA_USER[10])
-        if len(ROBOT_INFO[1]) == 1:
-            builder.row(types.InlineKeyboardButton(text=f"⚡️ {ROBOT_INFO[1][0]}", callback_data="record.StartRouteVAR1"))
-        if len(ROBOT_INFO[1]) == 2:
-            builder.row(types.InlineKeyboardButton(text=f"⚡️ {ROBOT_INFO[1][0]}", callback_data="record.StartRouteVAR1"))
-            builder.add(types.InlineKeyboardButton(text=f"{ROBOT_INFO[1][1]}", callback_data="record.StartRouteVAR2"))
-        if len(ROBOT_INFO[1]) == 3:
-            builder.row(types.InlineKeyboardButton(text=f"⚡️ {ROBOT_INFO[1][0]}", callback_data="record.StartRouteVAR1"))
-            builder.add(types.InlineKeyboardButton(text=f"{ROBOT_INFO[1][1]}", callback_data="record.StartRouteVAR2"))
-            builder.add(types.InlineKeyboardButton(text=f"{ROBOT_INFO[1][2]}", callback_data="record.StartRouteVAR3"))
+        if DATA_USER[14] == '':
+            await database.setUserID(message.from_user.id, "temporary", "'0'")
+            DATA_USER = await database.getUserID(message.from_user.id)
+        else:
+            NEW_VALUE = int(DATA_USER[14])
+            if LIST_QUESTIONS < NEW_VALUE + 1:
+                await recordLogs(message, bot)
+            else:
+                QUESTION = await database.getData('questions', 'name', f"'{DATA_USER[14]}'")
+                builder = InlineKeyboardBuilder()
+                builder.row(types.InlineKeyboardButton(text="Отменить запись", callback_data="mainMenu.Show", icon_custom_emoji_id='5219962561314721116'))
+                if QUESTION[4] == 1:
+                    MAIN = await bot.edit_message_text(
+                        chat_id=message.from_user.id,
+                        text=f"🎯 » 🟩 Начать запись\n\n"
+                             f"📝 {QUESTION[2]}",
+                        message_id=DATA_USER[2],
+                        reply_markup=builder.as_markup())
 
-        # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+
+# ———————————————————————————————————————————————————————————————————————————————————————————————————————————————
+
+
+
+
+
+
+
+@router.callback_query(F.data == 'record.CHECKRECORD')
+async def recordLogs(message: types.Message, bot: Bot):
+    DATA_SERVER = await database.getData('settings', 'id', "'1'")
+    await database.setUserID(message.from_user.id, "tg_answer", "'1'")
+    await database.setUserID(message.from_user.id, "state", "'record.recordLogsText'")
+    DATA_USER = await database.getUserID(message.from_user.id)
+    ROBOT_INFO = ast.literal_eval(DATA_USER[8])
+    BUTTONS = ast.literal_eval(DATA_USER[5])
+    LOGS = ast.literal_eval(DATA_USER[6])
+    TEXT_LOGS = ''
+    for item in LOGS:
+        TEXT_LOGS = f"{TEXT_LOGS}\n{item}"
+    if len(TEXT_LOGS) >= 3800:
+        builder = InlineKeyboardBuilder()
+        builder.row(types.InlineKeyboardButton(text="Закончить запись", callback_data="record.stop", icon_custom_emoji_id='5219962561314721116', style='danger'))
         MAIN = await bot.edit_message_text(
             chat_id=message.from_user.id,
-            text=f"🎯 » 🟩 Начать запись\n\n"
-                 f"❌ Укажите робота цифрами\n\n"
-                 f"📝 Введите номер маршрута или выберите из последних",
+            text=f"",
             message_id=DATA_USER[2],
             reply_markup=builder.as_markup())
-
+    else:
+        await recordLogs(message, bot)
 
 
 @router.callback_query(F.data == 'record.recordLogs')
@@ -466,18 +98,19 @@ async def recordLogs(message: types.Message, bot: Bot):
     TEXT_LOGS = ''
     for item in LOGS:
         TEXT_LOGS = f"{TEXT_LOGS}\n{item}"
+    await database.setUserID(message.from_user.id, 'temporary', f"'[]'")
 
     # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
     builder = InlineKeyboardBuilder()
     if DATA_USER[15] == 0:
-        builder.row(types.InlineKeyboardButton(text="❌ Закончить запись", callback_data="record.stop"))
+        builder.row(types.InlineKeyboardButton(text="Закончить запись", callback_data="record.stop", icon_custom_emoji_id='5219962561314721116', style='danger'))
     else:
         if DATA_USER[13] != 'Ходок':
-            builder.row(types.InlineKeyboardButton(text="❌ Закончить запись", callback_data="record.stop"))
+            builder.row(types.InlineKeyboardButton(text="Закончить запись", callback_data="record.stop", icon_custom_emoji_id='5219962561314721116', style='danger'))
         else:
-            builder.row(types.InlineKeyboardButton(text="❌ Закончить запись", callback_data="record.stopBattery"))
-    builder.add(types.InlineKeyboardButton(text="❌ Удалить строку", callback_data="record.deleteStroke"))
+            builder.row(types.InlineKeyboardButton(text="Закончить запись", callback_data="record.stopBattery", icon_custom_emoji_id='5219962561314721116', style='danger'))
+    builder.add(types.InlineKeyboardButton(text="Удалить строку", callback_data="record.deleteStroke", icon_custom_emoji_id='5220195739384190479'))
     if  DATA_USER[18] == 1:
         builder.row(types.InlineKeyboardButton(text="🛟 Помощь", callback_data="record.help"))
     for button in BUTTONS:
@@ -485,19 +118,27 @@ async def recordLogs(message: types.Message, bot: Bot):
         count = 0
         for subbutton in button:
             button_data = await database.getData('actions', 'idGate', f"'{subbutton}'")
-            if count == 0:
-                builder.row(types.InlineKeyboardButton(text=f"{button_data[2]}", callback_data=f"record.usedButton-{button_data[1]}"))
+            if button_data[1].startswith('USERCATEGORY-'):
+                if count == 0:
+                    builder.row(types.InlineKeyboardButton(text=f"{button_data[2]}", callback_data=f"record.usedCaterogy-{button_data[1]}"))
+                else:
+                    builder.add(types.InlineKeyboardButton(text=f"{button_data[2]}", callback_data=f"record.usedCaterogy-{button_data[1]}"))
+                count = count + 1
             else:
-                builder.add(types.InlineKeyboardButton(text=f"{button_data[2]}", callback_data=f"record.usedButton-{button_data[1]}"))
-            count = count + 1
+                if count == 0:
+                    builder.row(types.InlineKeyboardButton(text=f"{button_data[2]}", callback_data=f"record.usedButton-{button_data[1]}"))
+                else:
+                    builder.add(types.InlineKeyboardButton(text=f"{button_data[2]}", callback_data=f"record.usedButton-{button_data[1]}"))
+                count = count + 1
 
-
+    current_date = datetime.datetime.now()
+    formatted_date = current_date.strftime('%d.%m.%Y')
     # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
     TEXT_UP = ''
     if DATA_USER[13] != 'Ходок':
-        TEXT_UP = f"🤖 <b>А{ROBOT_INFO[0]}</b> • 🗺 <b>Маршрут {ROBOT_INFO[1]}</b>\n"
+        TEXT_UP = f"{formatted_date}\n{ROBOT_INFO[0]}\n"
     else:
-        TEXT_UP = f"🤖 <b>А{ROBOT_INFO[0]}</b> • 🗺 <b>Локация {ROBOT_INFO[1]}</b>\n"
+        TEXT_UP = f"{formatted_date}\n{ROBOT_INFO[0]}\n"
 
     MAIN = await bot.edit_message_text(
         chat_id=message.from_user.id,
@@ -638,6 +279,7 @@ async def recordLogsButton(callback: types.CallbackQuery, bot: Bot):
     result = [item[1] for item in sorted_data]
     LOGS = result
     await database.setUserID(callback.from_user.id, 'logs', f'\"{LOGS}\"')
+    await database.setUserID(callback.from_user.id, 'temporary', f"'[]'")
     # ---
     DATA_USER = await database.getUserID(callback.from_user.id)
     LOGS = ast.literal_eval(DATA_USER[6])
@@ -650,13 +292,13 @@ async def recordLogsButton(callback: types.CallbackQuery, bot: Bot):
 
     builder = InlineKeyboardBuilder()
     if DATA_USER[15] == 0:
-        builder.row(types.InlineKeyboardButton(text="❌ Закончить запись", callback_data="record.stop"))
+        builder.row(types.InlineKeyboardButton(text="Закончить запись", callback_data="record.stop", icon_custom_emoji_id='5219962561314721116', style='danger'))
     else:
         if DATA_USER[13] != 'Ходок':
-            builder.row(types.InlineKeyboardButton(text="❌ Закончить запись", callback_data="record.stop"))
+            builder.row(types.InlineKeyboardButton(text="Закончить запись", callback_data="record.stop", icon_custom_emoji_id='5219962561314721116', style='danger'))
         else:
-            builder.row(types.InlineKeyboardButton(text="❌ Закончить запись", callback_data="record.stopBattery"))
-    builder.add(types.InlineKeyboardButton(text="❌ Удалить строку", callback_data="record.deleteStroke"))
+            builder.row(types.InlineKeyboardButton(text="Закончить запись", callback_data="record.stopBattery", icon_custom_emoji_id='5219962561314721116', style='danger'))
+    builder.add(types.InlineKeyboardButton(text="Удалить строку", callback_data="record.deleteStroke", icon_custom_emoji_id='5220195739384190479'))
     if  DATA_USER[18] == 1:
         builder.row(types.InlineKeyboardButton(text="🛟 Помощь", callback_data="record.help"))
     for button in BUTTONS:
@@ -664,19 +306,27 @@ async def recordLogsButton(callback: types.CallbackQuery, bot: Bot):
         count = 0
         for subbutton in button:
             button_data = await database.getData('actions', 'idGate', f"'{subbutton}'")
-            if count == 0:
-                builder.row(types.InlineKeyboardButton(text=f"{button_data[2]}", callback_data=f"record.usedButton-{button_data[1]}"))
+            if button_data[1].startswith('USERCATEGORY-'):
+                if count == 0:
+                    builder.row(types.InlineKeyboardButton(text=f"{button_data[2]}", callback_data=f"record.usedCaterogy-{button_data[1]}"))
+                else:
+                    builder.add(types.InlineKeyboardButton(text=f"{button_data[2]}", callback_data=f"record.usedCaterogy-{button_data[1]}"))
+                count = count + 1
             else:
-                builder.add(types.InlineKeyboardButton(text=f"{button_data[2]}", callback_data=f"record.usedButton-{button_data[1]}"))
-            count = count + 1
+                if count == 0:
+                    builder.row(types.InlineKeyboardButton(text=f"{button_data[2]}", callback_data=f"record.usedButton-{button_data[1]}"))
+                else:
+                    builder.add(types.InlineKeyboardButton(text=f"{button_data[2]}", callback_data=f"record.usedButton-{button_data[1]}"))
+                count = count + 1
 
-
+    current_date = datetime.datetime.now()
+    formatted_date = current_date.strftime('%d.%m.%Y')
     # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
     TEXT_UP = ''
     if DATA_USER[13] != 'Ходок':
-        TEXT_UP = f"🤖 <b>А{ROBOT_INFO[0]}</b> • 🗺 <b>Маршрут {ROBOT_INFO[1]}</b>\n"
+        TEXT_UP = f"{formatted_date}\n{ROBOT_INFO[0]}\n"
     else:
-        TEXT_UP = f"🤖 <b>А{ROBOT_INFO[0]}</b> • 🗺 <b>Локация {ROBOT_INFO[1]}</b>\n"
+        TEXT_UP = f"{formatted_date}\n{ROBOT_INFO[0]}\n"
 
     MAIN = await bot.edit_message_text(
         chat_id=callback.from_user.id,
@@ -684,6 +334,164 @@ async def recordLogsButton(callback: types.CallbackQuery, bot: Bot):
              f"{TEXT_LOGS}",
         message_id=DATA_USER[2],
         reply_markup=builder.as_markup())
+
+
+@router.callback_query(F.data.startswith('record.usedCaterogy-'))
+async def recordLogsButtonCaterogy(callback: types.CallbackQuery, bot: Bot):
+    # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+
+    DATA_SERVER = await database.getData('settings', 'id', "'1'")
+    await database.setUserID(callback.from_user.id, "tg_answer", "'1'")
+    await database.setUserID(callback.from_user.id, "state", "'record.recordLogsText'")
+    DATA_USER = await database.getUserID(callback.from_user.id)
+
+    # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+
+    idGate = callback.data.replace('record.usedCaterogy-', '')
+    TEXT_FOR_LOGS = await database.getData('actions', 'idGate', f"'{idGate}'")
+    ROBOT_INFO = ast.literal_eval(DATA_USER[8])
+    LOGS = ast.literal_eval(DATA_USER[6])
+    HISTORY_CATEGORY = ast.literal_eval(DATA_USER[14])
+    HISTORY_CATEGORY.append(idGate)
+    await database.setUserID(callback.from_user.id, 'temporary', f'\"{HISTORY_CATEGORY}\"')
+    DATA_BUTTON = await database.getData('actions', 'idGate', f"'{idGate}'")
+    BUTTONS = ast.literal_eval(DATA_BUTTON[3])
+
+    DATA_USER = await database.getUserID(callback.from_user.id)
+    LOGS = ast.literal_eval(DATA_USER[6])
+
+    TEXT_LOGS = ''
+    for item in LOGS:
+        TEXT_LOGS = f"{TEXT_LOGS}\n{item}"
+
+    # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+
+    builder = InlineKeyboardBuilder()
+    if DATA_USER[15] == 0:
+        builder.row(types.InlineKeyboardButton(text="Закончить запись", callback_data="record.stop", icon_custom_emoji_id='5219962561314721116', style='danger'))
+    else:
+        if DATA_USER[13] != 'Ходок':
+            builder.row(types.InlineKeyboardButton(text="Закончить запись", callback_data="record.stop", icon_custom_emoji_id='5219962561314721116', style='danger'))
+        else:
+            builder.row(types.InlineKeyboardButton(text="Закончить запись", callback_data="record.stopBattery", icon_custom_emoji_id='5219962561314721116', style='danger'))
+    builder.add(types.InlineKeyboardButton(text="Удалить строку", callback_data="record.deleteStroke", icon_custom_emoji_id='5220195739384190479'))
+    if  DATA_USER[18] == 1:
+        builder.row(types.InlineKeyboardButton(text="🛟 Помощь", callback_data="record.help"))
+    builder.row(types.InlineKeyboardButton(text="Назад", callback_data="record.recordLogsButtonCaterogyBack", icon_custom_emoji_id='5220091062441251597'))
+    builder.add(types.InlineKeyboardButton(text="Главная", callback_data="record.recordLogs", icon_custom_emoji_id='5220091062441251597'))
+    for button in BUTTONS:
+        # [['BASEACTION1'], ['BASEACTION2', 'BASEACTION3'], ['BASEACTION4', 'BASEACTION5'], ['BASEACTION6'], ['BASEACTION7'], ['BASEACTION8'], ['BASEACTION9'], ['BASEACTION10'], ['BASEACTION11'], ['BASEACTION12', 'BASEACTION13', 'BASEACTION14'], ['BASEACTION15']]
+        count = 0
+        for subbutton in button:
+            button_data = await database.getData('actions', 'idGate', f"'{subbutton}'")
+            if button_data[1].startswith('USERCATEGORY-'):
+                if count == 0:
+                    builder.row(types.InlineKeyboardButton(text=f"{button_data[2]}", callback_data=f"record.usedCaterogy-{button_data[1]}"))
+                else:
+                    builder.add(types.InlineKeyboardButton(text=f"{button_data[2]}", callback_data=f"record.usedCaterogy-{button_data[1]}"))
+                count = count + 1
+            else:
+                if count == 0:
+                    builder.row(types.InlineKeyboardButton(text=f"{button_data[2]}", callback_data=f"record.usedButton-{button_data[1]}"))
+                else:
+                    builder.add(types.InlineKeyboardButton(text=f"{button_data[2]}", callback_data=f"record.usedButton-{button_data[1]}"))
+                count = count + 1
+
+    current_date = datetime.datetime.now()
+    formatted_date = current_date.strftime('%d.%m.%Y')
+    # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+    TEXT_UP = ''
+    if DATA_USER[13] != 'Ходок':
+        TEXT_UP = f"{formatted_date}\n{ROBOT_INFO[0]}\n"
+    else:
+        TEXT_UP = f"{formatted_date}\n{ROBOT_INFO[0]}\n"
+
+    MAIN = await bot.edit_message_text(
+        chat_id=callback.from_user.id,
+        text=f"{TEXT_UP}"
+             f"{TEXT_LOGS}",
+        message_id=DATA_USER[2],
+        reply_markup=builder.as_markup())
+
+
+@router.callback_query(F.data == 'record.recordLogsButtonCaterogyBack')
+async def recordLogsButtonCaterogyBack(callback: types.CallbackQuery, bot: Bot):
+    # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+
+    DATA_SERVER = await database.getData('settings', 'id', "'1'")
+    await database.setUserID(callback.from_user.id, "tg_answer", "'1'")
+    await database.setUserID(callback.from_user.id, "state", "'record.recordLogsText'")
+    DATA_USER = await database.getUserID(callback.from_user.id)
+
+    # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+
+    ROBOT_INFO = ast.literal_eval(DATA_USER[8])
+    HISTORY_CATEGORY = ast.literal_eval(DATA_USER[14])
+    CATEGORY = HISTORY_CATEGORY.pop()
+    await database.setUserID(callback.from_user.id, 'temporary', f'\"{HISTORY_CATEGORY}\"')
+    print(len(HISTORY_CATEGORY))
+    if len(HISTORY_CATEGORY) == 0:
+        await recordLogs(callback, bot)
+        return
+    else:
+        DATA_BUTTON = await database.getData('actions', 'idGate', f"'{HISTORY_CATEGORY[-1]}'")
+        BUTTONS = ast.literal_eval(DATA_BUTTON[3])
+
+        DATA_USER = await database.getUserID(callback.from_user.id)
+        LOGS = ast.literal_eval(DATA_USER[6])
+
+        TEXT_LOGS = ''
+        for item in LOGS:
+            TEXT_LOGS = f"{TEXT_LOGS}\n{item}"
+
+        # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+
+        builder = InlineKeyboardBuilder()
+        if DATA_USER[15] == 0:
+            builder.row(types.InlineKeyboardButton(text="Закончить запись", callback_data="record.stop", icon_custom_emoji_id='5219962561314721116', style='danger'))
+        else:
+            if DATA_USER[13] != 'Ходок':
+                builder.row(types.InlineKeyboardButton(text="Закончить запись", callback_data="record.stop", icon_custom_emoji_id='5219962561314721116', style='danger'))
+            else:
+                builder.row(types.InlineKeyboardButton(text="Закончить запись", callback_data="record.stopBattery", icon_custom_emoji_id='5219962561314721116', style='danger'))
+        builder.add(types.InlineKeyboardButton(text="Удалить строку", callback_data="record.deleteStroke", icon_custom_emoji_id='5220195739384190479'))
+        if  DATA_USER[18] == 1:
+            builder.row(types.InlineKeyboardButton(text="🛟 Помощь", callback_data="record.help"))
+        builder.row(types.InlineKeyboardButton(text="Назад", callback_data="record.recordLogsButtonCaterogyBack", icon_custom_emoji_id='5220091062441251597'))
+        builder.add(types.InlineKeyboardButton(text="Главная", callback_data="record.recordLogs", icon_custom_emoji_id='5220091062441251597'))
+        for button in BUTTONS:
+            # [['BASEACTION1'], ['BASEACTION2', 'BASEACTION3'], ['BASEACTION4', 'BASEACTION5'], ['BASEACTION6'], ['BASEACTION7'], ['BASEACTION8'], ['BASEACTION9'], ['BASEACTION10'], ['BASEACTION11'], ['BASEACTION12', 'BASEACTION13', 'BASEACTION14'], ['BASEACTION15']]
+            count = 0
+            for subbutton in button:
+                button_data = await database.getData('actions', 'idGate', f"'{subbutton}'")
+                if button_data[1].startswith('USERCATEGORY-'):
+                    if count == 0:
+                        builder.row(types.InlineKeyboardButton(text=f"{button_data[2]}", callback_data=f"record.usedCaterogy-{button_data[1]}"))
+                    else:
+                        builder.add(types.InlineKeyboardButton(text=f"{button_data[2]}", callback_data=f"record.usedCaterogy-{button_data[1]}"))
+                    count = count + 1
+                else:
+                    if count == 0:
+                        builder.row(types.InlineKeyboardButton(text=f"{button_data[2]}", callback_data=f"record.usedButton-{button_data[1]}"))
+                    else:
+                        builder.add(types.InlineKeyboardButton(text=f"{button_data[2]}", callback_data=f"record.usedButton-{button_data[1]}"))
+                    count = count + 1
+
+        current_date = datetime.datetime.now()
+        formatted_date = current_date.strftime('%d.%m.%Y')
+        # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+        TEXT_UP = ''
+        if DATA_USER[13] != 'Ходок':
+            TEXT_UP = f"{formatted_date}\n{ROBOT_INFO[0]}\n"
+        else:
+            TEXT_UP = f"{formatted_date}\n{ROBOT_INFO[0]}\n"
+
+        MAIN = await bot.edit_message_text(
+            chat_id=callback.from_user.id,
+            text=f"{TEXT_UP}"
+                 f"{TEXT_LOGS}",
+            message_id=DATA_USER[2],
+            reply_markup=builder.as_markup())
 
 
 
@@ -719,49 +527,53 @@ async def recordLogsText(message: types.Message, bot: Bot):
     if message.text == '/new_message' or message.text == '/start':
         pass
     else:
-        if SUPER_SORT == 1:
-            parts = message.text.split(' ', 1)  # Разбиваем по первому пробелу
-            time_part = parts[0]  # "9:41"
-            text_part = parts[1] if len(parts) > 1 else ""  # "Привет"
-
-            # Форматируем время
-            hours, minutes = map(int, time_part.split(':'))
-            formatted_time = f"{hours:02d}:{minutes:02d}"
-
-            TEXT_TO = ''
-            if text_part:
-                TEXT_TO = f"{formatted_time} {text_part}"
-            else:
-                TEXT_TO = formatted_time
-            LOGS.append(TEXT_TO)
+        if 1 == 0:
+            pass
         else:
-            LOGS.append(TEXT_FOR_LOGS)
-        for line in LOGS:
-            # Ищем время в начале строки (HH:MM или HH:MM:SS)
-            match = re.match(r'^(\d{1,2}):(\d{1,2})(?::(\d{2}))?', line)
-            if not match:
-                print(f"Ошибка: не удалось распознать время в строке: {line}")
-                continue
-            hour, minute, second = match.groups()
-            second = second or '00'  # Если секунды отсутствуют, считаем их 00
+            if SUPER_SORT == 1:
+                parts = message.text.split(' ', 1)  # Разбиваем по первому пробелу
+                time_part = parts[0]  # "9:41"
+                text_part = parts[1] if len(parts) > 1 else ""  # "Привет"
 
-            # Формируем строку времени для преобразования
-            time_str = f"{hour}:{minute}:{second}"
+                # Форматируем время
+                hours, minutes = map(int, time_part.split(':'))
+                formatted_time = f"{hours:02d}:{minutes:02d}"
 
-            try:
-                # Преобразуем в datetime (предполагаем текущую дату)
-                dt = datetime.datetime.strptime(time_str, "%H:%M:%S")
-                # Получаем timestamp (относительно начала дня)
-                timestamp = dt.hour * 3600 + dt.minute * 60 + dt.second
-                parsed_data.append((timestamp, line))
-            except ValueError as e:
-                print(f"Ошибка преобразования времени в строке '{line}': {e}")
-        sorted_data = sorted(parsed_data, key=lambda x: x[0])
-        result = [item[1] for item in sorted_data]
-        LOGS = result
-        await database.setUserID(message.from_user.id, 'logs', f'\"{LOGS}\"')
-    DATA_USER = await database.getUserID(message.from_user.id)
-    LOGS = ast.literal_eval(DATA_USER[6])
+                TEXT_TO = ''
+                if text_part:
+                    TEXT_TO = f"{formatted_time} {text_part}"
+                else:
+                    TEXT_TO = formatted_time
+                LOGS.append(TEXT_TO)
+            else:
+                LOGS.append(TEXT_FOR_LOGS)
+            for line in LOGS:
+                # Ищем время в начале строки (HH:MM или HH:MM:SS)
+                match = re.match(r'^(\d{1,2}):(\d{1,2})(?::(\d{2}))?', line)
+                if not match:
+                    print(f"Ошибка: не удалось распознать время в строке: {line}")
+                    continue
+                hour, minute, second = match.groups()
+                second = second or '00'  # Если секунды отсутствуют, считаем их 00
+
+                # Формируем строку времени для преобразования
+                time_str = f"{hour}:{minute}:{second}"
+
+                try:
+                    # Преобразуем в datetime (предполагаем текущую дату)
+                    dt = datetime.datetime.strptime(time_str, "%H:%M:%S")
+                    # Получаем timestamp (относительно начала дня)
+                    timestamp = dt.hour * 3600 + dt.minute * 60 + dt.second
+                    parsed_data.append((timestamp, line))
+                except ValueError as e:
+                    print(f"Ошибка преобразования времени в строке '{line}': {e}")
+            sorted_data = sorted(parsed_data, key=lambda x: x[0])
+            result = [item[1] for item in sorted_data]
+            LOGS = result
+            await database.setUserID(message.from_user.id, 'logs', f'\"{LOGS}\"')
+            DATA_USER = await database.getUserID(message.from_user.id)
+            print(DATA_USER[6])
+            LOGS = ast.literal_eval(DATA_USER[6])
 
     TEXT_LOGS = ''
     for item in LOGS:
@@ -771,13 +583,13 @@ async def recordLogsText(message: types.Message, bot: Bot):
 
     builder = InlineKeyboardBuilder()
     if DATA_USER[15] == 0:
-        builder.row(types.InlineKeyboardButton(text="❌ Закончить запись", callback_data="record.stop"))
+        builder.row(types.InlineKeyboardButton(text="Закончить запись", callback_data="record.stop", icon_custom_emoji_id='5219962561314721116', style='danger'))
     else:
         if DATA_USER[13] != 'Ходок':
-            builder.row(types.InlineKeyboardButton(text="❌ Закончить запись", callback_data="record.stop"))
+            builder.row(types.InlineKeyboardButton(text="Закончить запись", callback_data="record.stop", icon_custom_emoji_id='5219962561314721116', style='danger'))
         else:
-            builder.row(types.InlineKeyboardButton(text="❌ Закончить запись", callback_data="record.stopBattery"))
-    builder.add(types.InlineKeyboardButton(text="❌ Удалить строку", callback_data="record.deleteStroke"))
+            builder.row(types.InlineKeyboardButton(text="Закончить запись", callback_data="record.stopBattery", icon_custom_emoji_id='5219962561314721116', style='danger'))
+    builder.add(types.InlineKeyboardButton(text="Удалить строку", callback_data="record.deleteStroke", icon_custom_emoji_id='5220195739384190479'))
     if  DATA_USER[18] == 1:
         builder.row(types.InlineKeyboardButton(text="🛟 Помощь", callback_data="record.help"))
     for button in BUTTONS:
@@ -785,18 +597,27 @@ async def recordLogsText(message: types.Message, bot: Bot):
         count = 0
         for subbutton in button:
             button_data = await database.getData('actions', 'idGate', f"'{subbutton}'")
-            if count == 0:
-                builder.row(types.InlineKeyboardButton(text=f"{button_data[2]}", callback_data=f"record.usedButton-{button_data[1]}"))
+            if button_data[1].startswith('USERCATEGORY-'):
+                if count == 0:
+                    builder.row(types.InlineKeyboardButton(text=f"{button_data[2]}", callback_data=f"record.usedCaterogy-{button_data[1]}"))
+                else:
+                    builder.add(types.InlineKeyboardButton(text=f"{button_data[2]}", callback_data=f"record.usedCaterogy-{button_data[1]}"))
+                count = count + 1
             else:
-                builder.add(types.InlineKeyboardButton(text=f"{button_data[2]}", callback_data=f"record.usedButton-{button_data[1]}"))
-            count = count + 1
+                if count == 0:
+                    builder.row(types.InlineKeyboardButton(text=f"{button_data[2]}", callback_data=f"record.usedButton-{button_data[1]}"))
+                else:
+                    builder.add(types.InlineKeyboardButton(text=f"{button_data[2]}", callback_data=f"record.usedButton-{button_data[1]}"))
+                count = count + 1
 
+        current_date = datetime.datetime.now()
+        formatted_date = current_date.strftime('%d.%m.%Y')
         # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
         TEXT_UP = ''
         if DATA_USER[13] != 'Ходок':
-            TEXT_UP = f"🤖 <b>А{ROBOT_INFO[0]}</b> • 🗺 <b>Маршрут {ROBOT_INFO[1]}</b>\n"
+            TEXT_UP = f"{formatted_date}\n{ROBOT_INFO[0]}\n"
         else:
-            TEXT_UP = f"🤖 <b>А{ROBOT_INFO[0]}</b> • 🗺 <b>Локация {ROBOT_INFO[1]}</b>\n"
+            TEXT_UP = f"{formatted_date}\n{ROBOT_INFO[0]}\n"
 
         MAIN = await bot.edit_message_text(
             chat_id=message.from_user.id,
@@ -1278,7 +1099,7 @@ async def help(message: types.Message, bot: Bot):
     # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
     builder = InlineKeyboardBuilder()
-    builder.row(types.InlineKeyboardButton(text="◀️ Назад", callback_data="record.recordLogs"))
+    builder.row(types.InlineKeyboardButton(text="Назад", callback_data="record.recordLogs", icon_custom_emoji_id='5220091062441251597'))
     builder.row(types.InlineKeyboardButton(text="🛜 Проблема Wifi", callback_data="record.helpWifi"))
     builder.row(types.InlineKeyboardButton(text="🚳 Расслабить колеса", callback_data="record.helpRelax"))
     builder.row(types.InlineKeyboardButton(text="🔴 Не уходит крит", callback_data="record.helpBadKrit"))
@@ -1309,7 +1130,7 @@ async def helpWifi(message: types.Message, bot: Bot):
     # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
     builder = InlineKeyboardBuilder()
-    builder.row(types.InlineKeyboardButton(text="◀️ Назад", callback_data="record.help"))
+    builder.row(types.InlineKeyboardButton(text="Назад", callback_data="record.help", icon_custom_emoji_id='5220091062441251597'))
     builder.row(types.InlineKeyboardButton(text="🛜 Не работает WiFi", callback_data="record.helpWifiNotWorking"))
     builder.row(types.InlineKeyboardButton(text="🛜 Пропал WiFi", callback_data="record.helpWifiMissing"))
     builder.row(types.InlineKeyboardButton(text="🛜 Глушилка, WiFi не работает", callback_data="record.helpWifiGlushilka"))
@@ -1339,7 +1160,7 @@ async def helpCheck(message: types.Message, bot: Bot):
     # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
     builder = InlineKeyboardBuilder()
-    builder.row(types.InlineKeyboardButton(text="◀️ Назад", callback_data="record.help"))
+    builder.row(types.InlineKeyboardButton(text="Назад", callback_data="record.help", icon_custom_emoji_id='5220091062441251597'))
     ROBOT_INFO = ast.literal_eval(DATA_USER[8])
     SENIORS = ast.literal_eval(DATA_SERVER[5])
 
@@ -1386,7 +1207,7 @@ async def helpParktroniks(message: types.Message, bot: Bot):
     # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
     builder = InlineKeyboardBuilder()
-    builder.row(types.InlineKeyboardButton(text="◀️ Назад", callback_data="record.help"))
+    builder.row(types.InlineKeyboardButton(text="Назад", callback_data="record.help", icon_custom_emoji_id='5220091062441251597'))
     ROBOT_INFO = ast.literal_eval(DATA_USER[8])
     SENIORS = ast.literal_eval(DATA_SERVER[5])
 
@@ -1431,7 +1252,7 @@ async def helpBadKrit(message: types.Message, bot: Bot):
     # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
     builder = InlineKeyboardBuilder()
-    builder.row(types.InlineKeyboardButton(text="◀️ Назад", callback_data="record.help"))
+    builder.row(types.InlineKeyboardButton(text="Назад", callback_data="record.help", icon_custom_emoji_id='5220091062441251597'))
     ROBOT_INFO = ast.literal_eval(DATA_USER[8])
     SENIORS = ast.literal_eval(DATA_SERVER[5])
 
@@ -1477,7 +1298,7 @@ async def helpRelax(message: types.Message, bot: Bot):
     # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
     builder = InlineKeyboardBuilder()
-    builder.row(types.InlineKeyboardButton(text="◀️ Назад", callback_data="record.help"))
+    builder.row(types.InlineKeyboardButton(text="Назад", callback_data="record.help", icon_custom_emoji_id='5220091062441251597'))
     ROBOT_INFO = ast.literal_eval(DATA_USER[8])
     SENIORS = ast.literal_eval(DATA_SERVER[5])
 
@@ -1519,7 +1340,7 @@ async def helpWifiGlushilka(message: types.Message, bot: Bot):
     # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
     builder = InlineKeyboardBuilder()
-    builder.row(types.InlineKeyboardButton(text="◀️ Назад", callback_data="record.help"))
+    builder.row(types.InlineKeyboardButton(text="Назад", callback_data="record.help", icon_custom_emoji_id='5220091062441251597'))
     ROBOT_INFO = ast.literal_eval(DATA_USER[8])
     SENIORS = ast.literal_eval(DATA_SERVER[5])
 
@@ -1561,7 +1382,7 @@ async def helpWifiMissing(message: types.Message, bot: Bot):
     # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
     builder = InlineKeyboardBuilder()
-    builder.row(types.InlineKeyboardButton(text="◀️ Назад", callback_data="record.help"))
+    builder.row(types.InlineKeyboardButton(text="Назад", callback_data="record.help", icon_custom_emoji_id='5220091062441251597'))
     ROBOT_INFO = ast.literal_eval(DATA_USER[8])
     SENIORS = ast.literal_eval(DATA_SERVER[5])
 
@@ -1606,7 +1427,7 @@ async def helpWifiNotWorking(message: types.Message, bot: Bot):
     # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
     builder = InlineKeyboardBuilder()
-    builder.row(types.InlineKeyboardButton(text="◀️ Назад", callback_data="record.help"))
+    builder.row(types.InlineKeyboardButton(text="Назад", callback_data="record.help", icon_custom_emoji_id='5220091062441251597'))
     ROBOT_INFO = ast.literal_eval(DATA_USER[8])
     SENIORS = ast.literal_eval(DATA_SERVER[5])
 
