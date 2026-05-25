@@ -6,7 +6,6 @@
 
 import asyncio, logging, time, states, random, ast
 
-from aiogram.types import FSInputFile
 # ———————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -17,8 +16,6 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.client.bot import DefaultBotProperties
 from aiogram.enums import ParseMode
 
-import requests
-
 # ———————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
 from modules import database, registration, mainMenu, settings, record, lastlog, archive
@@ -27,8 +24,8 @@ from misc import logout, errors
 
 # ———————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
-# bot = Bot(token="", default=DefaultBotProperties(parse_mode=ParseMode.HTML)) # DISLOG_BETA
-# bot = Bot(token="", default=DefaultBotProperties(parse_mode=ParseMode.HTML)) # DISLOG
+# bot = Bot(token="8542519204:AAGILv1SZg-EN6MDG57H7lvvFBIGHiErJp4", default=DefaultBotProperties(parse_mode=ParseMode.HTML))
+bot = Bot(token="8416280540:AAG7gE3IMe_rLpkHw2iEF4p6RfoekelVmQc", default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 
 # ———————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
@@ -56,36 +53,6 @@ async def cmd_start(message: types.Message, bot: Bot):
         return
 
 
-
-
-@dp.message(F.text, Command("sendEmailMe-UFBOU38YFBOUYS73"))
-async def cmd_sendEmailMe(message: types.Message, bot: Bot):
-    await bot.send_photo(
-        chat_id=message.from_user.id,
-        caption='📰 <b>Сбой Dislog</b>\n\n'
-                'Вчера произошло внеплановое отключение сервера Dislog. Из-за этого отключения некоторые функции Dislog могли работать некорректно. В данный момент инцидент закрыт, базовый функционал работает. Важно отметить несколько пунктов: \n\n— Удалены все активные логи\n— Удален ваш архив, нельзя посмотреть прошлые 10 записей\n\nКак только начнете работать, введите команду /new_message, чтобы начать запись логов.',
-        photo=FSInputFile(path='banner 4_3.png'),
-    )
-
-
-@dp.message(F.text, Command("sendEmail-GG81IFJS9123BVBZX"))
-async def cmd_sendEmail(message: types.Message, bot: Bot):
-    users = await database.getDataAllMulti('users')
-    for user in users:
-        try:
-            await bot.send_photo(
-                chat_id=user[1],
-                caption='📰 <b>Новый формат отчетов уже доступен!</b>\n\n'
-                        'Всем привет, тут Илья решил меня занять роботой. Так вот, новый формат отчетов уже доступен, новый формат отчетов виден только во время активной записи. Последний лог и архивные записи в старом формате.\n\nDislog продолжает работу в Telegram, а в подслужке я скинул шаблон новой клавиатуры!',
-                photo=FSInputFile(path='2026-05-09 12.14.56.jpg'),
-            )
-        except Exception as ex:
-            print('НЕ ОТПРАВИЛ СООБЩЕНИЕ')
-        await asyncio.sleep(1)
-        print('отправил сообщение!')
-    print('Всем рассылка пришла, если пришла конечно')
-
-
 @dp.message(F.text, Command("new_message"))
 async def cmd_newMessage(message: types.Message, bot: Bot):
     if await database.getDataMultiCount('users', 'tg_id', f'{message.from_user.id}') == 0:
@@ -100,6 +67,30 @@ async def cmd_newMessage(message: types.Message, bot: Bot):
         await database.setUserID(message.from_user.id, "tg_mainMessage", f"'{NEW_MESSAGE.message_id}'")
         await database.setUserID(message.from_user.id, 'tg_lastMessage', f"'{time.time()}'")
         await mainMenu.Show(message, bot)
+
+
+@dp.message(F.text, Command("send_me_email"))
+async def cmd_newMessage(message: types.Message, bot: Bot):
+    await message.answer_photo(
+        text='🎄 <b>С наступающим 2026 годом</b>\n\n'
+             'Этот год стал самым необычным, интересным и даже увлекательным. За этот год мы сделали много интересных вещей. Помогали картографии, обучали новеньких. '
+             'Нами интересовались все, ведь мы центр притяжения и надеюсь, что следующий год станет еще лучше для всей нашей команды — <b>Ходоков</b>\n\n'
+             'Чтобы в новом году у вас не ломались джои, не болели и еще чаще встречались со своими коллегами не на работе, а в баре.\n\n'
+             '🌍 Dislog » вместе с вами в 2026!',
+        photo='AgACAgIAAxkBAAEIlV1pVSjBbiNRFZU4gmPENcDPEfXOxAAC1hBrG3-wqErqOt-Q0Mf6lAEAAwIAA3kAAzgE'
+    )
+
+
+@dp.message(F.text, Command("send_all_email"))
+async def cmd_newMessage(message: types.Message, bot: Bot):
+    await message.answer_photo(
+        text='🎄 <b>С наступающим 2026 годом</b>\n\n'
+             'Этот год стал самым необычным, интересным и даже увлекательным. За этот год мы сделали много интересных вещей. Помогали картографии, обучали новеньких. '
+             'Нами интересовались все, ведь мы центр притяжения и надеюсь, что следующий год станет еще лучше для всей нашей команды — <b>Ходоков</b>\n\n'
+             'Чтобы в новом году у вас не ломались джои, не болели и еще чаще встречались со своими коллегами не на работе, а в баре.\n\n'
+             '🌍 Dislog » вместе с вами в 2026!',
+        photo='AgACAgIAAxkBAAEIlV1pVSjBbiNRFZU4gmPENcDPEfXOxAAC1hBrG3-wqErqOt-Q0Mf6lAEAAwIAA3kAAzgE'
+    )
 
 
 @dp.message()

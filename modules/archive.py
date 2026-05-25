@@ -32,7 +32,7 @@ async def Show(message: types.Message, bot: Bot):
     # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
     builder = InlineKeyboardBuilder()
-    builder.row(types.InlineKeyboardButton(text="◀️ Назад", callback_data="mainMenu.Show"))
+    builder.row(types.InlineKeyboardButton(text="Назад", callback_data="mainMenu.Show", icon_custom_emoji_id='5220091062441251597'))
     count = 0
     for item in ARCHIVE:
         builder.row(types.InlineKeyboardButton(text=f"🤖 {item[-1][0]} • 🗺 {item[-1][1]} • {item[-1][2]}", callback_data=f"archive.ShowLogs-{count}"))
@@ -60,7 +60,7 @@ async def Show(callback: types.CallbackQuery, bot: Bot):
     # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
     builder = InlineKeyboardBuilder()
-    builder.row(types.InlineKeyboardButton(text="◀️ Назад", callback_data="archive.Show"))
+    builder.row(types.InlineKeyboardButton(text="Назад", callback_data="archive.Show", icon_custom_emoji_id='5220091062441251597'))
 
     LOGS = ast.literal_eval(DATA_USER[7])
     IDLOG = callback.data.replace('archive.ShowLogs-', '')

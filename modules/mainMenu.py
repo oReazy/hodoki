@@ -26,21 +26,25 @@ async def Show(message: types.Message, bot: Bot):
     DATA_SERVER = await database.getData('settings', 'id', "'1'")
     await database.setUserID(message.from_user.id, "tg_answer", "'0'")
     await database.setUserID(message.from_user.id, "state", "'mainMenu.Show'")
+    await database.setUserID(message.from_user.id, "temporary", "''")
     DATA_USER = await database.getUserID(message.from_user.id)
 
     # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
     builder = InlineKeyboardBuilder()
-    builder.row(types.InlineKeyboardButton(text="🟩 Начать запись", callback_data="record.StartRobot"))
-    builder.row(types.InlineKeyboardButton(text="📄 Последний лог", callback_data="lastlog.Show"))
-    builder.add(types.InlineKeyboardButton(text="📑 Архив логов", callback_data="archive.Show"))
-    # builder.row(types.InlineKeyboardButton(text="🔰 FAQ", callback_data="mainMenu.faq"))
-    builder.row(types.InlineKeyboardButton(text="⚙️ Настройки", callback_data="settings.Show"))
+    if DATA_USER[16] == 0:
+        builder.row(types.InlineKeyboardButton(text="Начать запись", callback_data="record.QuestionStart", style='success', icon_custom_emoji_id='5219848989494514645'))
+        builder.row(types.InlineKeyboardButton(text="Последний лог", callback_data="lastlog.Show", icon_custom_emoji_id='5217616890695816378'))
+        builder.add(types.InlineKeyboardButton(text="Архив логов", callback_data="archive.Show", icon_custom_emoji_id='5219952167493867867'))
+    if DATA_USER[16] == 1:
+        builder.row(types.InlineKeyboardButton(text="🛠 Старший смены", callback_data="senior.Show"))
+    # builder.row(types.InlineKeyboardButton(text="🆕 Помощь для вечерних", callback_data="mainMenu.faq"))
+    builder.row(types.InlineKeyboardButton(text="Настройки", callback_data="settings.Show", icon_custom_emoji_id='5219899605684098553'))
 
     # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
     MAIN = await bot.edit_message_text(
         chat_id=message.from_user.id,
-        text=f"🎯 Главное меню",
+        text=f"🎯 Главное меню\n\n",
         message_id=DATA_USER[2],
         reply_markup=builder.as_markup())
 
@@ -59,17 +63,13 @@ async def faq(message: types.Message, bot: Bot):
 
     builder = InlineKeyboardBuilder()
     builder.row(types.InlineKeyboardButton(text="◀️ Назад", callback_data="mainMenu.Show"))
-    builder.row(types.InlineKeyboardButton(text="🔰 Начало записи", callback_data="mainMenu.faq1"))
-    builder.row(types.InlineKeyboardButton(text="🔰 Выбор шаблона", callback_data="mainMenu.faq2"))
-    builder.row(types.InlineKeyboardButton(text="🔰 Включение секунд для логов", callback_data="mainMenu.faq3"))
-    builder.row(types.InlineKeyboardButton(text="🔰 Режим ходока", callback_data="mainMenu.faq4"))
-    builder.row(types.InlineKeyboardButton(text="🔰 Свои данные для логов", callback_data="mainMenu.faq5"))
-    builder.row(types.InlineKeyboardButton(text="🔰 Очистка данных", callback_data="mainMenu.faq6"))
+    builder.row(types.InlineKeyboardButton(text="⚙️ Перейти в настройки", callback_data="settings.Show"))
 
     # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
     MAIN = await bot.edit_message_text(
         chat_id=message.from_user.id,
-        text=f"🎯 » 🔰 FAQ",
+        text=f"🎯 » 🆕 Помощь для вечерних\n\n"
+             f"В нашей работе помощь всегда нужна — включить WiFi, расслабить колеса или вылечить криты. Теперь вы можете это делать в два клика! Старшие получают уведомление с управлением робота, после того, как старшие смены обработают ваш запрос, вам придет уведомление о выполненной работе. Выбирайте свое смещение и включайте помощь!",
         message_id=DATA_USER[2],
         reply_markup=builder.as_markup())
 
@@ -87,7 +87,7 @@ async def faq(message: types.Message, bot: Bot):
     # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
     builder = InlineKeyboardBuilder()
-    builder.row(types.InlineKeyboardButton(text="◀️ Назад", callback_data="mainMenu.Show"))
+    builder.row(types.InlineKeyboardButton(text="Назад", callback_data="mainMenu.Show", icon_custom_emoji_id='5220091062441251597'))
 
     # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
     MAIN = await bot.edit_message_text(

@@ -31,7 +31,7 @@ async def Show(message: types.Message, bot: Bot):
     # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
     builder = InlineKeyboardBuilder()
-    builder.row(types.InlineKeyboardButton(text="◀️ Назад", callback_data="mainMenu.Show"))
+    builder.row(types.InlineKeyboardButton(text="Назад", callback_data="mainMenu.Show", icon_custom_emoji_id='5220091062441251597'))
 
     LOGS = ast.literal_eval(DATA_USER[7])
     if len(LOGS) == 0:
